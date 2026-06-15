@@ -1,0 +1,30 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+
+# Model
+models/
+checkpoints/
+
+# Data
+data/
+index/
+
+# Environment variables
+.env
+.env.*
+
+# Virtual environment
+.venv
+venv
+
+# Images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.webp
+*.svg
+*.ico
