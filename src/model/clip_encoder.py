@@ -15,13 +15,7 @@ class CLIPEncoder:
     """
 
     def __init__(self, model_name: str = "openai/clip-vit-base-patch32", device: str = None):
-        """
-        Initialize the CLIP model and processor.
-
-        Args:
-            model_name: HuggingFace model identifier.
-            device: Device to run inference on ('cpu', 'cuda', 'mps'). If None, it auto-detects.
-        """
+       
         self.model_name = model_name
         
         # Auto-detect device if none provided
@@ -41,6 +35,7 @@ class CLIPEncoder:
         self.model.eval()
 
     def encode_text(self, text: str) -> np.ndarray:
+
         # Step 1: Tokenize — convert the raw string into token IDs the model understands
         # e.g. "a cat" → {input_ids: [[49406, 320, 2368, 49407]], attention_mask: [[1,1,1,1]]}
         inputs = self.processor(text=text, return_tensors="pt", padding=True, truncation=True)
@@ -58,15 +53,7 @@ class CLIPEncoder:
         return text_features.cpu().numpy().astype(np.float32).squeeze()
 
     def encode_image(self, image: Image.Image) -> np.ndarray:
-        """
-        Encode a single PIL Image into a normalized L2 embedding.
-
-        Args:
-            image: Preprocessed PIL Image.
-
-        Returns:
-            A 1D numpy array of shape (embedding_dim,) representing the normalized embedding.
-        """
+        
         # Step 1: Preprocess — resize to 224x224, normalize pixel values (ImageNet mean/std)
         # The processor handles RGB conversion automatically (grayscale, RGBA → RGB)
         inputs = self.processor(images=image, return_tensors="pt")
@@ -93,7 +80,27 @@ class CLIPEncoder:
         Returns:
             A 2D numpy array of shape (num_images, embedding_dim) representing the normalized embeddings.
         """
-        raise NotImplementedError("To be implemented by Model Engineer (ME-4) in Sprint 1")
+        all_embeddings = []
+
+        # Process images in chunks of `batch_size` to avoid OOM
+        for i in range(0, len(images), batch_size):
+            batch = images[i : i + batch_size]
+
+            # Preprocess the entire batch at once — processor handles a list of images
+            inputs = self.processor(images=batch, return_tensors="pt", padding=True)
+            inputs = {k: v.to(self.device) for k, v in inputs.items()}
+
+            with torch.no_grad():
+                features = self.model.get_image_features(**inputs)
+
+            # Normalize each vector in the batch independently
+            features = features / features.norm(dim=-1, keepdim=True)
+
+            # Move to CPU immediately to free GPU memory before next batch
+            all_embeddings.append(features.cpu().numpy().astype(np.float32))
+
+        # Stack all chunks: list of (batch_i, 512) → single (N, 512) matrix
+        return np.vstack(all_embeddings)
 
     def encode_image_from_path(self, path: str) -> np.ndarray:
         """
