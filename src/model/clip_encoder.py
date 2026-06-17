@@ -41,16 +41,21 @@ class CLIPEncoder:
         self.model.eval()
 
     def encode_text(self, text: str) -> np.ndarray:
-        """
-        Encode a single text query into a normalized L2 embedding.
+        # Step 1: Tokenize — convert the raw string into token IDs the model understands
+        # e.g. "a cat" → {input_ids: [[49406, 320, 2368, 49407]], attention_mask: [[1,1,1,1]]}
+        inputs = self.processor(text=text, return_tensors="pt", padding=True, truncation=True)
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
 
-        Args:
-            text: Input text prompt.
+        # Step 2: Forward pass — run tokens through the text encoder
+        # torch.no_grad() disables gradient computation → saves memory and speeds up inference
+        with torch.no_grad():
+            text_features = self.model.get_text_features(**inputs)
 
-        Returns:
-            A 1D numpy array of shape (embedding_dim,) representing the normalized embedding.
-        """
-        raise NotImplementedError("To be implemented by Model Engineer (ME-2) in Sprint 1")
+        # Step 3: L2 normalize — make the vector unit length so dot product == cosine similarity
+        text_features = text_features / text_features.norm(dim=-1, keepdim=True)
+
+        # Step 4: Convert to numpy — move off GPU if needed, cast to float32 (FAISS requirement)
+        return text_features.cpu().numpy().astype(np.float32).squeeze()
 
     def encode_image(self, image: Image.Image) -> np.ndarray:
         """
