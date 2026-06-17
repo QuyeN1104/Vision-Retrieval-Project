@@ -67,7 +67,20 @@ class CLIPEncoder:
         Returns:
             A 1D numpy array of shape (embedding_dim,) representing the normalized embedding.
         """
-        raise NotImplementedError("To be implemented by Model Engineer (ME-3) in Sprint 1")
+        # Step 1: Preprocess — resize to 224x224, normalize pixel values (ImageNet mean/std)
+        # The processor handles RGB conversion automatically (grayscale, RGBA → RGB)
+        inputs = self.processor(images=image, return_tensors="pt")
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+
+        # Step 2: Forward pass — run pixel tensor through the vision encoder (ViT)
+        with torch.no_grad():
+            image_features = self.model.get_image_features(**inputs)
+
+        # Step 3: L2 normalize — same reason as encode_text, ensures cosine similarity via dot product
+        image_features = image_features / image_features.norm(dim=-1, keepdim=True)
+
+        # Step 4: Convert to numpy float32, squeeze batch dim (1, 512) → (512,)
+        return image_features.cpu().numpy().astype(np.float32).squeeze()
 
     def encode_images_batch(self, images: List[Image.Image], batch_size: int = 32) -> np.ndarray:
         """
