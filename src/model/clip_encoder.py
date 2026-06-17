@@ -4,7 +4,9 @@ Owner: Model Engineer (ME-1, ME-2, ME-3, ME-4, Sprint 1)
 """
 from typing import List, Union
 import numpy as np
+import torch
 from PIL import Image
+from transformers import CLIPModel, CLIPProcessor
 
 
 class CLIPEncoder:
@@ -12,15 +14,31 @@ class CLIPEncoder:
     Wrapper around HuggingFace or OpenAI CLIP model to compute embeddings.
     """
 
-    def __init__(self, model_name: str = "openai/clip-vit-base-patch32", device: str = "cpu"):
+    def __init__(self, model_name: str = "openai/clip-vit-base-patch32", device: str = None):
         """
         Initialize the CLIP model and processor.
 
         Args:
             model_name: HuggingFace model identifier.
-            device: Device to run inference on ('cpu', 'cuda', 'mps').
+            device: Device to run inference on ('cpu', 'cuda', 'mps'). If None, it auto-detects.
         """
-        raise NotImplementedError("To be implemented by Model Engineer (ME-1) in Sprint 1")
+        self.model_name = model_name
+        
+        # Auto-detect device if none provided
+        if device is None:
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        else:
+            self.device = device
+            
+        # CLIPProcessor handles both tokenization (text) and image preprocessing
+        self.processor = CLIPProcessor.from_pretrained(model_name)
+        
+        # Load the model and move it to the target device
+        self.model = CLIPModel.from_pretrained(model_name).to(self.device)
+        
+        # CRITICAL: Always put the model in evaluation mode for inference.
+        # This disables layers like Dropout and BatchNorm, making outputs deterministic.
+        self.model.eval()
 
     def encode_text(self, text: str) -> np.ndarray:
         """
