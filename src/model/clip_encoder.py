@@ -3,6 +3,7 @@ src/model/clip_encoder.py — CLIP Encoder wrapper for text and images.
 Owner: Model Engineer (ME-1, ME-2, ME-3, ME-4, Sprint 1)
 """
 from typing import List, Union
+from pathlib import Path
 import numpy as np
 import torch
 from PIL import Image
@@ -112,4 +113,16 @@ class CLIPEncoder:
         Returns:
             A 1D numpy array of shape (embedding_dim,) representing the normalized embedding.
         """
-        raise NotImplementedError("To be implemented by Model Engineer (ME-3) in Sprint 2")
+        # Step 1: Validate that the file actually exists
+        if not Path(path).exists():
+            raise FileNotFoundError(f"Image not found: {path}")
+
+        # Step 2: Open and convert to RGB
+        # .convert("RGB") handles edge cases:
+        #   - Grayscale (mode "L") → 3-channel RGB
+        #   - Transparent PNGs (mode "RGBA") → drops alpha channel
+        #   - Palette images (mode "P") → expands to RGB
+        image = Image.open(path).convert("RGB")
+
+        # Step 3: Delegate to encode_image() — reuse the logic we already built in Sprint 1
+        return self.encode_image(image)

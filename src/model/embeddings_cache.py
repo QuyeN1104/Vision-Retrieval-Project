@@ -58,4 +58,35 @@ class EmbeddingsCache:
         Returns:
             A tuple of (embeddings numpy array, list of string IDs).
         """
-        raise NotImplementedError("To be implemented by Model Engineer (ME-2) in Sprint 2")
+        base_path = Path(base_path)
+        npy_path = str(base_path) + ".npy"
+        ids_path = str(base_path) + "_ids.json"
+
+        # Step 1: Check that both cache files exist before attempting to load
+        # Give a clear error message pointing to the exact missing file
+        if not Path(npy_path).exists():
+            raise FileNotFoundError(
+                f"Embeddings file not found: {npy_path}. "
+                f"Run the indexing pipeline first to generate embeddings."
+            )
+        if not Path(ids_path).exists():
+            raise FileNotFoundError(
+                f"IDs mapping file not found: {ids_path}. "
+                f"The cache may be corrupted — re-run indexing."
+            )
+
+        # Step 2: Load the numpy matrix and the JSON id list
+        embeddings = np.load(npy_path).astype(np.float32)
+
+        with open(ids_path, "r", encoding="utf-8") as f:
+            ids = json.load(f)
+
+        # Step 3: Validate consistency — same check as save(), guards against
+        # manual edits or partial writes that corrupted the cache
+        if len(ids) != embeddings.shape[0]:
+            raise ValueError(
+                f"Cache corrupted: {embeddings.shape[0]} embeddings but {len(ids)} IDs in {ids_path}. "
+                f"Delete both files and re-run indexing."
+            )
+
+        return embeddings, ids
