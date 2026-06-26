@@ -4,6 +4,7 @@ Owner: Model Engineer (ME-1, ME-2, Sprint 2)
 """
 from pathlib import Path
 from typing import List, Tuple
+import json
 import numpy as np
 
 
@@ -22,7 +23,29 @@ class EmbeddingsCache:
             ids: List of unique identifiers (e.g., image paths or IDs).
             base_path: Base filepath (without extension) for saving cache files.
         """
-        raise NotImplementedError("To be implemented by Model Engineer (ME-1) in Sprint 2")
+        # Step 1: Validate — number of IDs must match number of embedding rows
+        # If they don't match, the mapping between vector index → image ID is broken
+        if len(ids) != embeddings.shape[0]:
+            raise ValueError(
+                f"Mismatch: {embeddings.shape[0]} embeddings but {len(ids)} IDs. "
+                f"Each embedding row must have exactly one corresponding ID."
+            )
+
+        base_path = Path(base_path)
+
+        # Step 2: Create parent directories if they don't exist
+        # e.g. base_path = "data/index/embeddings" → creates "data/index/"
+        base_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Step 3: Save the embedding matrix as .npy (numpy binary format)
+        # .npy is fast and compact: 10,000 × 512 float32 = ~20MB on disk
+        np.save(str(base_path) + ".npy", embeddings)
+
+        # Step 4: Save the ID list as .json (human-readable mapping)
+        # Index i in the .npy file corresponds to ids[i] in the .json file
+        ids_path = str(base_path) + "_ids.json"
+        with open(ids_path, "w", encoding="utf-8") as f:
+            json.dump(ids, f, ensure_ascii=False, indent=2)
 
     @staticmethod
     def load(base_path: Path | str) -> Tuple[np.ndarray, List[str]]:
