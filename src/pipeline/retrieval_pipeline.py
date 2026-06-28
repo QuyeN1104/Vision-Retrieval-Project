@@ -33,28 +33,56 @@ class RetrievalPipeline:
     Main pipeline orchestrating the query flow: encode inputs -> search index -> rerank.
     """
 
-    def __init__(self, encoder_model: str, index_path: Path | str, metadata_path: Path | str,
-                 dim: int = 512, rerank: bool = True, overfetch: int = 4):
+    def __init__(self, encoder_model: Optional[str] = None,
+                 index_path: Path | str | None = None,
+                 metadata_path: Path | str | None = None,
+                 dim: int = 512, rerank: bool = True, overfetch: int = 4,
+                 device: Optional[str] = None):
         """
         Load assets required for real-time querying.
 
+        All paths/model default to the project ``Config`` (config.get_config()), so the
+        UI layer can simply do ``RetrievalPipeline()`` once the index has been built.
+
         Args:
-            encoder_model: Model name/path for the CLIP encoder.
-            index_path: Path to the serialized FAISS index.
-            metadata_path: Path to the serialized metadata file (metadata.json).
+            encoder_model: CLIP model name (default: Config.MODEL_NAME).
+            index_path: Path to the serialized FAISS index (default: Config.INDEX_PATH).
+            metadata_path: Path to metadata.json (default: ``Config.DATA_DIR/metadata.json``).
             dim: Embedding dimension (default 512).
             rerank: Whether to apply exact cosine re-ranking after ANN search.
             overfetch: Candidate multiplier fetched before re-ranking (k * overfetch).
+            device: Encoder device (default: Config.DEVICE).
         """
-        from src.model.clip_encoder import CLIPEncoder  # imported lazily (Model Engineer's)
+        encoder_model, index_path, metadata_path, device = self._resolve_config(
+            encoder_model, index_path, metadata_path, device)
 
-        self.encoder = CLIPEncoder(encoder_model)
+        from src.model.clip_encoder import CLIPEncoder  # Model Engineer's wrapper
+
+        self.encoder = CLIPEncoder(encoder_model, device=device)
         self.index = FaissIndex(dim=dim)
         self.index.load(index_path)
         self.metadata = self._load_metadata(metadata_path)
         self.rerank = rerank
         self.overfetch = max(1, int(overfetch))
-        logger.info("RetrievalPipeline ready: %d items indexed.", self.index.ntotal)
+        logger.info("RetrievalPipeline ready: %d items indexed (model=%s, device=%s).",
+                    self.index.ntotal, encoder_model, device)
+
+    @staticmethod
+    def _resolve_config(encoder_model, index_path, metadata_path, device):
+        """Fill any unset argument from the project Config (graceful if Config absent)."""
+        try:
+            from config import get_config
+            cfg = get_config()
+            encoder_model = encoder_model or cfg.MODEL_NAME
+            index_path = index_path or cfg.INDEX_PATH
+            metadata_path = metadata_path or str(Path(cfg.DATA_DIR) / "metadata.json")
+            device = device or cfg.DEVICE
+        except Exception as e:  # Config not available — require explicit args
+            logger.warning("Config unavailable (%s); using provided arguments.", e)
+        if not (encoder_model and index_path and metadata_path):
+            raise ValueError("encoder_model, index_path and metadata_path must be set "
+                             "(either explicitly or via config.Config).")
+        return encoder_model, index_path, metadata_path, device
 
     # --------------------------------------------------------- DI / testing ctor
     @classmethod
@@ -72,12 +100,24 @@ class RetrievalPipeline:
     # ------------------------------------------------------------------ loaders
     @staticmethod
     def _load_metadata(metadata_path: Path | str) -> List[dict]:
-        data = json.loads(Path(metadata_path).read_text(encoding="utf-8"))
-        if isinstance(data, dict) and "records" in data:
-            data = data["records"]
-        if not isinstance(data, list):
-            raise ValueError(f"metadata must be a list of records, got {type(data)}")
-        return data
+        """Load metadata as a position-aligned list of dicts.
+
+        Prefers the Data Engineer's ``metadata_store.load_metadata`` (the team API,
+        returns ImageRecord objects -> converted to dicts for the reranker contract),
+        and falls back to reading the metadata.json directly if that module is absent.
+        """
+        try:
+            from dataclasses import asdict
+            from src.data.metadata_store import load_metadata
+            return [asdict(r) for r in load_metadata(str(metadata_path))]
+        except Exception as e:
+            logger.warning("metadata_store.load_metadata unavailable (%s); reading JSON directly.", e)
+            data = json.loads(Path(metadata_path).read_text(encoding="utf-8"))
+            if isinstance(data, dict) and "records" in data:
+                data = data["records"]
+            if not isinstance(data, list):
+                raise ValueError(f"metadata must be a list of records, got {type(data)}")
+            return data
 
     # --------------------------------------------------------- PE-4 (Sprint 2)
     def query_by_text(self, text: str, k: int = 10,

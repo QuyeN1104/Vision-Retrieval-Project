@@ -22,8 +22,8 @@ from typing import TYPE_CHECKING, List
 import numpy as np
 from PIL import Image
 
-if TYPE_CHECKING:  # avoid a hard runtime dependency on teammates' unfinished modules
-    from src.data.dataset_loader import ImageRecord
+if TYPE_CHECKING:  # avoid a hard runtime dependency on teammates' modules
+    from src.data.datatypes import ImageRecord  # canonical ImageRecord location
     from src.model.clip_encoder import CLIPEncoder
 
 logger = logging.getLogger(__name__)
