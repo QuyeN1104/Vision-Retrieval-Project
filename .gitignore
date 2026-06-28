@@ -8,7 +8,6 @@ models/
 checkpoints/
 
 # Data
-data/
 index/
 
 # Environment variables
