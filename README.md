@@ -150,7 +150,20 @@ vision-retrieval-project/
 └── pyproject.toml / uv.lock      # Package manager
 ```
 
-<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" height="8">
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" height="50">
+
+## 👥 Đội ngũ Phát triển & Phân công
+
+Dự án được phân bổ công việc theo nguyên tắc **Agile** trong 3 Sprints với các vai trò chuyên môn được định nghĩa rõ ràng:
+- **Project Manager / Tech Lead**: Quản lý tiến độ, thiết kế kiến trúc và setup CI/CD.
+- **AI / Model Engineer**: Tích hợp mô hình CLIP, xử lý embedding và tinh chỉnh hiệu suất.
+- **Data / Search Engineer**: Xử lý dữ liệu, xây dựng FAISS vector index.
+- **Pipeline / QA Engineer**: Xây dựng luồng Retrieval Pipeline và đánh giá (Evaluation).
+- **UI / UX Engineer**: Phát triển giao diện Streamlit, trực quan hóa biểu đồ và kết quả.
+
+*(Chi tiết các tasks, metrics và roles vui lòng tham khảo file [plan.md](./plan.md))*.
+
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" height="50">
 
 ## 🌟 Star History
 
