@@ -3,6 +3,13 @@ src/utils/logger.py — Structured logging utility declaration.
 Owner: Tech Lead (TL-2, Sprint 1)
 """
 import logging
+import sys
+
+from rich.console import Console
+from rich.logging import RichHandler
+
+_console = Console(stderr=True)
+
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -15,4 +22,27 @@ def get_logger(name: str) -> logging.Logger:
     Returns:
         Configured Logger instance.
     """
-    raise NotImplementedError("To be implemented by Tech Lead (TL-2) in Sprint 1")
+    logger = logging.getLogger(name)
+
+    if logger.hasHandlers():
+        return logger
+    
+    logger.setLevel(logging.INFO)
+    
+    handler = RichHandler(
+        console = _console,
+        show_time=True,
+        show_path=True,
+        show_level=True,
+    )
+    formatter = logging.Formatter(
+        "%(message)s",
+        style="%",
+    )
+
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.propagate = False
+
+    return logger
+    
