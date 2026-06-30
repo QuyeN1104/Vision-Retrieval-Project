@@ -1,109 +1,173 @@
-# Vision Retrieval Project 👁️🔍
+<div align="center">
+  <img src="assets/logo.png" alt="Vision Retrieval Logo" width="150" height="150">
 
-Hệ thống truy vấn hình ảnh (Image Retrieval) sử dụng kiến trúc **CLIP + FAISS + Streamlit**. Dự án cho phép tìm kiếm hình ảnh tương đồng dựa trên hai phương pháp:
-- **Text Query**: Tìm kiếm hình ảnh bằng văn bản mô tả.
-- **Image Upload**: Tìm kiếm hình ảnh tương đồng bằng cách upload một hình ảnh mẫu.
+  # Vision Retrieval Project 👁️🔍
 
-## 🌟 Tính năng nổi bật
+  <p>
+    <strong>A high-performance Multimodal Image Retrieval System using CLIP & FAISS</strong>
+  </p>
 
-- **Zero-shot Retrieval**: Sử dụng `openai/clip-vit-base-patch32` để trích xuất đặc trưng (embedding) từ ảnh và văn bản.
-- **Fast Vector Search**: Sử dụng `FAISS` (Facebook AI Similarity Search) để tối ưu hóa tìm kiếm Top-K vector nhanh và chính xác.
-- **Web UI Mượt mà**: Tương tác trực tiếp bằng trình duyệt qua giao diện **Streamlit**.
-- **Cấu trúc Module**: Codebase được thiết kế theo chuẩn, dễ dàng scale và test, tách bạch rõ ràng giữa Data, Model, Search và UI.
+  <!-- Badges -->
+  <p>
+    <a href="https://github.com/QuyeN1104/Vision-Retrieval-Project/stargazers">
+      <img src="https://img.shields.io/github/stars/QuyeN1104/Vision-Retrieval-Project?style=for-the-badge&color=yellow" alt="GitHub stars" />
+    </a>
+    <a href="LICENSE">
+      <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License: MIT" />
+    </a>
+    <a href="https://www.python.org/downloads/release/python-3130/">
+      <img src="https://img.shields.io/badge/Python-3.13+-green.svg?style=for-the-badge&logo=python&logoColor=white" alt="Python Version" />
+    </a>
+  </p>
+</div>
 
----
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" height="50">
 
-## 🛠️ Kiến trúc Hệ thống
+## 📸 Demo
+
+
+<div align="center">
+  <!-- Place your GIF here -->
+  <img src="assets/demo_app.gif?text=[+]++Insert+Demo+GIF+Here++[+]" alt="Demo GIF" width="800"/>
+</div>
+
+### App Screenshots
+<p align="center">
+  <img src="assets/text.png?text=[+]++Search+by+Text++[+]" alt="Text Search UI" width="49%"/>
+  <img src="assets/image.png?text=[+]++Search+by+Image++[+]" alt="Image Search UI" width="49%"/>
+</p>
+
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" height="8">
+
+## 🌟 Overview
+
+**Vision Retrieval** là hệ thống tra cứu và trích xuất hình ảnh đa phương thức (Multimodal). Dự án kết hợp sức mạnh thấu hiểu ngữ nghĩa của mô hình **CLIP** và tốc độ tìm kiếm vector hàng triệu chiều của **FAISS** để mang lại trải nghiệm tìm kiếm ảnh chính xác trong tích tắc. 
+
+Ứng dụng lý tưởng để trích xuất các khung hình (keyframes) từ các video lớn, duyệt ảnh thông minh mà không cần gắn thẻ (tagging) thủ công.
+
+### Tính năng cốt lõi:
+- ✍️ **Text-to-Image Search**: Tìm kiếm hình ảnh bằng câu lệnh ngôn ngữ tự nhiên (Zero-shot).
+- 🖼️ **Image-to-Image Search**: Tìm kiếm ảnh tương đồng bằng cách upload một hình ảnh mẫu hoặc chọn ảnh có sẵn.
+- ⚡ **Real-time Vector Search**: Tốc độ phản hồi tính bằng mili-giây nhờ FAISS (FlatL2 / Inner Product index).
+- 📊 **Thống kê & Trực quan**: Tích hợp các bộ lọc (Filters) và biểu đồ phân phối điểm số tương đồng (Score distribution chart).
+- 🧩 **Out-of-the-box**: Hỗ trợ tập dữ liệu mẫu (Sample Dataset) tích hợp sẵn, chỉ 1 lệnh chạy là lên hình ngay!
+
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" height="8">
+
+## 🛠️ Architecture
 
 ```mermaid
 graph TD
-    A[Input: Text/Image] --> B[CLIP Encoder]
-    B -->|Embedding 512-d| C[FAISS Index]
-    C -->|Top-K| D[Result Reranker]
-    D --> E[Streamlit UI]
+    A[Input: Text/Image Query] --> B[CLIP Encoder]
+    B -->|Embedding 512-d| C{FAISS Index}
+    
+    subgraph Data Pipeline
+        DB[(Offline Dataset)] -->|Encode| Index[(FAISS Index \n + Metadata)]
+    end
+    
+    Index -.-> C
+    C -->|Top-K Results| D[Reranking & Filtering]
+    D --> E[Streamlit Web UI]
 ```
 
----
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" height="8">
 
-## ⚙️ Cài đặt & Setup
+## 🚀 Quick Start (Zero Setup)
 
-Dự án có hỗ trợ bộ quản lý package siêu tốc **`uv`** (khuyên dùng) hoặc `pip` truyền thống.
-Python yêu cầu: **>= 3.13**.
+Dự án đã tích hợp sẵn một **tập dữ liệu mẫu (Sample Dataset)** cùng FAISS Index được build sẵn. Nhờ đó, bạn có thể chạy thử ứng dụng ngay mà không tốn công cấu hình phức tạp.
 
-### 1. Cài đặt các thư viện
-Nếu bạn đang dùng **`uv`**:
+### Yêu cầu
+- Python >= 3.13
+- Khuyên dùng [**uv**](https://github.com/astral-sh/uv) (Trình quản lý package siêu tốc).
+
+### Chạy ứng dụng ngay lập tức
 ```bash
-# Đồng bộ hoá và tự động setup môi trường
+# 1. Clone dự án
+git clone https://github.com/your-username/vision-retrieval-project.git
+cd vision-retrieval-project
+
+# 2. Cài đặt các thư viện (nếu dùng uv)
 uv sync
-```
 
-Hoặc dùng **`pip`**:
+# 3. Khởi động Web App
+uv run streamlit run app.py
+```
+> Truy cập ứng dụng tại `http://localhost:8501`. Mặc định ứng dụng sẽ tự động tải 20 ảnh test được cung cấp sẵn!
+
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" height="8">
+
+## 🔧 Advanced Setup (Với Custom Dataset)
+
+Khi bạn muốn sử dụng tập dữ liệu lớn của riêng bạn (ví dụ: 10,000+ keyframes).
+
+### Bước 1: Chuẩn bị dữ liệu
+Lưu trữ toàn bộ dữ liệu ảnh của bạn vào thư mục `data/images/`. Hệ thống sẽ tự động quét đệ quy các thư mục con để tìm ảnh (`.jpg`, `.png`).
+
+### Bước 2: Khởi tạo Vector Index (Build Index)
+Chạy script để encode toàn bộ tập dữ liệu thành vector và lưu thành FAISS index.
+
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Trên Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+uv run python scripts/build_index.py --data-dir data/images --output-dir data/index
 ```
+*(Quá trình này sẽ sử dụng GPU nếu có và có thể mất vài phút tùy vào số lượng ảnh).*
 
-### 2. Cấu hình biến môi trường
-Tạo file `.env` từ file cấu hình mẫu `.env.example`:
+### Bước 3: Cấu hình biến môi trường
+Tạo file `.env` để trỏ ứng dụng về thư mục Index vừa build:
 ```bash
 cp .env.example .env
 ```
-Nội dung file cấu hình tham khảo (`.env`):
+Mở file `.env` và sửa dòng `INDEX_PATH`:
 ```env
-DATA_DIR=data
 INDEX_PATH=data/index/faiss.index
-MODEL_NAME=openai/clip-vit-base-patch32
-TOP_K=5
 ```
 
----
-
-## 🚀 Hướng dẫn Sử dụng
-
-### Bước 1: Chuẩn bị Dữ liệu
-Lưu trữ toàn bộ file ảnh gốc vào thư mục `data/images/`.
-Đảm bảo file `data/metadata.json` đã được tạo để lưu thông tin về dữ liệu.
-
-### Bước 2: Khởi tạo Index (Xây dựng Vector DB)
-Sau khi chuẩn bị dữ liệu xong, chạy script để encode toàn bộ tập dữ liệu thành vector và lưu thành FAISS index.
-
+### Bước 4: Chạy App
 ```bash
-python scripts/build_index.py
+uv run streamlit run app.py
 ```
-*Lưu ý: Quá trình này tốn nhiều thời gian phụ thuộc vào số lượng tập ảnh và có/không sử dụng GPU.*
 
-### Bước 3: Chạy Streamlit App
-Khởi động giao diện tương tác:
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" height="8">
 
-```bash
-streamlit run app.py
-```
-Truy cập qua URL hiển thị trên terminal (mặc định là `http://localhost:8501`).
-
----
-
-## 📂 Cấu trúc Thư mục
+## 📂 Project Structure
 
 ```text
 vision-retrieval-project/
-├── app.py                        # Streamlit app entry point
-├── config.py                     # Quản lý cấu hình toàn dự án (Pydantic Settings)
-├── data/                         # Thư mục lưu trữ hình ảnh gốc, index và metadata
-├── scripts/                      # Các scripts hỗ trợ (build_index, eval_retrieval, bench_latency)
+├── app.py                        # Streamlit web application
+├── config.py                     # Pydantic Settings & Defaults
+├── data/                         
+│   ├── sample_images/            # Tập ảnh mẫu (Out-of-the-box testing)
+│   ├── sample_index/             # FAISS index cho tập mẫu
+│   └── images/                   # (Ignored) Nơi chứa dataset thật
+├── scripts/                      
+│   └── build_index.py            # CLI Tool để build vector index
 ├── src/
-│   ├── data/                     # Load dataset, xử lý và chuẩn hóa dữ liệu ảnh
-│   ├── model/                    # Model wrappers (CLIP) và các logic caching embeddings
-│   ├── pipeline/                 # Các orchestration workflows chính
-│   ├── search/                   # Quản lý FAISS index và tính năng Reranking
-│   └── utils/                    # System logs, metrics cho đánh giá, visualization
-├── tests/                        # Hệ thống Unit và Integration Tests
-└── requirements.txt / uv.lock    # Quản lý các thư viện, dependencies
+│   ├── data/                     # Data loaders (hỗ trợ đọc file đệ quy)
+│   ├── model/                    # Model wrappers (OpenAI CLIP)
+│   ├── pipeline/                 # Retrieval Pipeline orchestration
+│   ├── search/                   # Quản lý FAISS engine
+│   └── utils/                    # Logs, Matplotlib visualizations
+├── tests/                        # Pytest suites
+└── pyproject.toml / uv.lock      # Package manager
 ```
 
----
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" height="8">
 
-## 👥 Đội ngũ Phát triển
-Dự án được phân bổ công việc theo nguyên tắc Agile trong 3 Sprints với các vai trò chuyên môn được định nghĩa rõ ràng: **Tech Lead**, **Data Engineer**, **Model Engineer**, **Pipeline Engineer** và **UI Engineer**.
+## 🌟 Star History
 
-*(Chi tiết các tasks, metrics và roles vui lòng tham khảo file `plan.md`)*.
+<a href="https://www.star-history.com/?type=date&repos=QuyeN1104%2FVision-Retrieval-Project">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=QuyeN1104/Vision-Retrieval-Project&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=QuyeN1104/Vision-Retrieval-Project&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=QuyeN1104/Vision-Retrieval-Project&type=date&legend=top-left" />
+ </picture>
+</a>
+
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" height="8">
+
+## 📝 License
+
+Dự án được phân phối dưới giấy phép **MIT License**. Xem file `LICENSE` để biết thêm chi tiết. Điều này có nghĩa là bạn có thể tự do sử dụng, sao chép, chỉnh sửa, gộp, xuất bản, phân phối, cấp phép lại và/hoặc bán các bản sao của Phần mềm.
+
+<p align="center">
+  <i>Được xây dựng với ❤️ bởi Prize_Hunter (AI Conquer 2026).</i>
+</p>
