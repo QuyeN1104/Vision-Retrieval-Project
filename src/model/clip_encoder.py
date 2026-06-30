@@ -45,6 +45,8 @@ class CLIPEncoder:
         # torch.no_grad() disables gradient computation → saves memory and speeds up inference
         with torch.no_grad():
             text_features = self.model.get_text_features(**inputs)
+            if not isinstance(text_features, torch.Tensor):
+                text_features = text_features.pooler_output
 
         # Step 3: L2 normalize — make the vector unit length so dot product == cosine similarity
         text_features = text_features / text_features.norm(dim=-1, keepdim=True)
@@ -62,6 +64,8 @@ class CLIPEncoder:
         # Step 2: Forward pass — run pixel tensor through the vision encoder (ViT)
         with torch.no_grad():
             image_features = self.model.get_image_features(**inputs)
+            if not isinstance(image_features, torch.Tensor):
+                image_features = image_features.pooler_output
 
         # Step 3: L2 normalize — same reason as encode_text, ensures cosine similarity via dot product
         image_features = image_features / image_features.norm(dim=-1, keepdim=True)
@@ -92,6 +96,8 @@ class CLIPEncoder:
 
             with torch.no_grad():
                 features = self.model.get_image_features(**inputs)
+                if not isinstance(features, torch.Tensor):
+                    features = features.pooler_output
 
             # Normalize each vector in the batch independently
             features = features / features.norm(dim=-1, keepdim=True)
