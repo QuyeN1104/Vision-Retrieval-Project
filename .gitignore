@@ -2,29 +2,23 @@
 *.pyc
 __pycache__/
 *.pyo
-
-# Model
-models/
-checkpoints/
+.pytest_cache/
+.ruff_cache/
 
 # Data
-data/
-index/
+data/images/*
+!data/images/.gitkeep
+data/index/*
+!data/index/.gitkeep
+
+# Allow sample data
+!data/sample_images/
+!data/sample_index/
 
 # Environment variables
 .env
-.env.*
 
 # Virtual environment
-.venv
-venv
-
-# Images
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.bmp
-*.webp
-*.svg
-*.ico
+.venv/
+venv/
+env/
