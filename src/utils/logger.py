@@ -3,7 +3,6 @@ src/utils/logger.py — Structured logging utility declaration.
 Owner: Tech Lead (TL-2, Sprint 1)
 """
 import logging
-import sys
 
 from rich.console import Console
 from rich.logging import RichHandler
