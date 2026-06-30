@@ -3,9 +3,6 @@ from typing import List
 from .datatypes import ImageRecord
 
 def save_metadata(records: List[ImageRecord], path: str) -> None:
-    """
-    Saves a list of ImageRecords to a JSON file.
-    """
     data = [
         {
             "id": r.id,
@@ -20,9 +17,6 @@ def save_metadata(records: List[ImageRecord], path: str) -> None:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
 def load_metadata(path: str) -> List[ImageRecord]:
-    """
-    Loads a list of ImageRecords from a JSON file.
-    """
     records = []
     with open(path, mode="r", encoding="utf-8") as f:
         data = json.load(f)
