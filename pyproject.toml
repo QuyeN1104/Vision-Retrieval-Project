@@ -20,5 +20,6 @@ clip = { git = "https://github.com/openai/CLIP.git" }
 
 [dependency-groups]
 dev = [
+    "ruff",
     "pytest>=9.1.1",
 ]

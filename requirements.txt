@@ -1,8 +1,17 @@
-pydantic-settings>=2.14.1
-rich>=15.0.0
-torch>=2.12.0
-torchvision>=0.20.0
-faiss-cpu>=1.8.0
-streamlit>=1.40.0
-Pillow>=10.0.0
-git+https://github.com/openai/CLIP.git
+# Core Pipeline & Model
+torch>=2.0.0
+torchvision
+transformers>=4.30.0  # Cho openai/clip-vit-base-patch32
+faiss-cpu>=1.7.4
+
+# Data & Processing
+Pillow>=9.5.0
+numpy>=1.24.0
+
+# UI & Visualization
+streamlit>=1.24.0
+matplotlib>=3.7.0
+
+# Testing & Linting
+pytest>=7.4.0
+ruff>=0.1.0

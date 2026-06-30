@@ -115,3 +115,49 @@ def test_mmr_balances_diversity():
     recs = [{"id": "dup1", "path": "p"}, {"id": "dup2", "path": "p"}, {"id": "div", "path": "p"}]
     picked = [r.image_id for r in mmr_rerank(q, cand, recs, k=2, lambda_param=0.0)]
     assert "div" in picked  # diversity term pulls in the different item
+
+
+def test_integration_with_metadata_store_and_disk_index(tmp_path):
+    """Sprint-2 integration: metadata_store JSON + on-disk FAISS save/load + pipeline.
+
+    Exercises the real cross-module wiring (Data layer metadata_store <-> Pipeline's
+    _load_metadata, and FaissIndex.save/load) with a FakeEncoder so no CLIP download
+    is needed. Confirms the pipeline reads the Data Engineer's metadata format and
+    resolves index ids -> records correctly.
+    """
+    from src.data.datatypes import ImageRecord
+    from src.data.metadata_store import save_metadata
+
+    rng = np.random.default_rng(1)
+    c_cat = np.zeros(DIM, np.float32)
+    c_cat[0] = 1.0
+    c_dog = np.zeros(DIM, np.float32)
+    c_dog[1] = 1.0
+
+    embs, records = [], []
+    for label, center in (("cat", c_cat), ("dog", c_dog)):
+        for j in range(15):
+            embs.append(_unit(center + rng.normal(0, 0.05, DIM).astype(np.float32)))
+            records.append(ImageRecord(id=f"{label}_{j}", path=f"/img/{label}_{j}.jpg", label=label))
+    embeddings = np.vstack(embs).astype(np.float32)
+
+    # Data Engineer's metadata format on disk
+    meta_path = tmp_path / "metadata.json"
+    save_metadata(records, str(meta_path))
+
+    # FaissIndex save -> load roundtrip (built in the same record order)
+    idx_path = tmp_path / "faiss.index"
+    built = FaissIndex(dim=DIM, index_type="flat")
+    built.build(embeddings)
+    built.save(idx_path)
+    loaded = FaissIndex(dim=DIM)
+    loaded.load(idx_path)
+    assert loaded.ntotal == 30
+
+    # pipeline reads metadata via metadata_store; FakeEncoder supplies the query vec
+    metadata = RetrievalPipeline._load_metadata(meta_path)
+    assert isinstance(metadata, list) and metadata[0]["label"] == "cat"
+    pipe = RetrievalPipeline.from_components(FakeEncoder({"cat": c_cat}), loaded, metadata)
+    results = pipe.query_by_text("cat", k=5)
+    assert len(results) == 5 and all(r.label == "cat" for r in results)
+    assert results[0].path.endswith(".jpg")
