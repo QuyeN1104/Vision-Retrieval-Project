@@ -7,17 +7,36 @@ from .datatypes import ImageRecord
 
 def load_dataset(data_dir: str) -> List[ImageRecord]:
     """
-    Scans an image directory and returns a list of ImageRecords.
+    Recursively scans an image directory and returns a list of ImageRecords.
+
+    Label is automatically derived from the immediate parent directory name
+    of each image file (e.g. ``data/L28_V001/001.jpg`` → label ``L28_V001``).
+    If the image sits directly in *data_dir* (no subdirectory), label is None.
     """
     valid_extensions = {".jpg", ".jpeg", ".png"}
+    data_dir = os.path.abspath(data_dir)
+    project_root = os.getcwd()
     records = []
     for root, _, files in os.walk(data_dir):
-        for file in files:
+        for file in sorted(files):
             ext = os.path.splitext(file)[1].lower()
             if ext in valid_extensions:
-                file_path = os.path.join(root, file)
+                abs_file_path = os.path.join(root, file)
+                # Store paths relative to project root for portability
+                try:
+                    file_path = os.path.relpath(abs_file_path, project_root)
+                    # If it starts with '..', it's outside the project, keep it absolute
+                    if file_path.startswith(".."):
+                        file_path = abs_file_path
+                except ValueError:
+                    file_path = abs_file_path
+                    
                 record_id = str(uuid.uuid4())
-                records.append(ImageRecord(id=record_id, path=file_path))
+                # Derive label from the immediate parent directory name.
+                # If the image is directly inside data_dir, label stays None.
+                parent_dir = os.path.basename(root)
+                label = parent_dir if os.path.abspath(root) != data_dir else None
+                records.append(ImageRecord(id=record_id, path=file_path, label=label))
     return records
 
 def load_from_manifest(csv_path: str) -> List[ImageRecord]:

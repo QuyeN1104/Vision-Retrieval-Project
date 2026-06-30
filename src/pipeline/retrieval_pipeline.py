@@ -75,7 +75,7 @@ class RetrievalPipeline:
             cfg = get_config()
             encoder_model = encoder_model or cfg.MODEL_NAME
             index_path = index_path or cfg.INDEX_PATH
-            metadata_path = metadata_path or str(Path(cfg.DATA_DIR) / "metadata.json")
+            metadata_path = metadata_path or str(Path(cfg.INDEX_PATH).parent / "metadata.json")
             device = device or cfg.DEVICE
         except Exception as e:  # Config not available — require explicit args
             logger.warning("Config unavailable (%s); using provided arguments.", e)

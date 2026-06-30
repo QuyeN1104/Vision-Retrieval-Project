@@ -1,0 +1,7 @@
+{
+  "dim": 512,
+  "index_type": "flat",
+  "nlist": 100,
+  "nprobe": 10,
+  "ntotal": 20
+}

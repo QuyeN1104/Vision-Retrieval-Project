@@ -16,7 +16,7 @@ class Config(BaseSettings):
     To be populated with paths, model configurations, and search parameters.
     """
     DATA_DIR: str = "data"
-    INDEX_PATH: str = "data/index/faiss.index"
+    INDEX_PATH: str = "data/sample_index/faiss.index"
     MODEL_NAME: str = "openai/clip-vit-base-patch32"
     TOP_K: int = 5
     DEVICE: str = "cuda" if torch.cuda.is_available() else "cpu"
