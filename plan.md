@@ -118,11 +118,11 @@ vision-retrieval-project/
 
 | Role | Trách nhiệm chính |
 |------|------------------|
-| **Tech Lead** | Kiến trúc tổng thể, code review, integration, CI/CD, tài liệu |
-| **Data Engineer** | Chuẩn bị dataset, metadata, preprocessing, test set annotation |
-| **Model Engineer** | CLIP encoder, embedding cache, model experiments |
-| **Pipeline Engineer** | FAISS index, retrieval pipeline, reranker, batch encoding |
-| **UI Engineer** | Streamlit app, UX, kết nối UI ↔ pipeline, visualization |
+| **Tech Lead (Nguyễn Phúc Định Quyền)** | Kiến trúc tổng thể, code review, integration, CI/CD, tài liệu |
+| **Data Engineer(Nguyễn Trần Ngọc Thịnh)** | Chuẩn bị dataset, metadata, preprocessing, test set annotation |
+| **Model Engineer(Kiều Hoàng Quân)** | CLIP encoder, embedding cache, model experiments |
+| **Pipeline Engineer(Lê Đình Minh Quân)** | FAISS index, retrieval pipeline, reranker, batch encoding |
+| **UI Engineer(Trần Phước Anh Khoa)** | Streamlit app, UX, kết nối UI ↔ pipeline, visualization |
 
 ---
 
