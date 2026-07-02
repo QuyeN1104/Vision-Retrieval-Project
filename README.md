@@ -155,11 +155,11 @@ vision-retrieval-project/
 ## 👥 Đội ngũ Phát triển & Phân công
 
 Dự án được phân bổ công việc theo nguyên tắc **Agile** trong 3 Sprints với các vai trò chuyên môn được định nghĩa rõ ràng:
-- **Project Manager / Tech Lead**: Quản lý tiến độ, thiết kế kiến trúc và setup CI/CD.
-- **AI / Model Engineer**: Tích hợp mô hình CLIP, xử lý embedding và tinh chỉnh hiệu suất.
-- **Data / Search Engineer**: Xử lý dữ liệu, xây dựng FAISS vector index.
-- **Pipeline / QA Engineer**: Xây dựng luồng Retrieval Pipeline và đánh giá (Evaluation).
-- **UI / UX Engineer**: Phát triển giao diện Streamlit, trực quan hóa biểu đồ và kết quả.
+- **Project Manager / Tech Lead (Nguyễn Phúc Định Quyền)**: Quản lý tiến độ, thiết kế kiến trúc và setup CI/CD.
+- **AI / Model Engineer (Kiều Hoàng Quân)**: Tích hợp mô hình CLIP, xử lý embedding và tinh chỉnh hiệu suất.
+- **Data / Search Engineer (Nguyễn Trần Ngọc Thịnh)**: Xử lý dữ liệu, xây dựng FAISS vector index.
+- **Pipeline / QA Engineer (Lê Đình Minh Quân)**: Xây dựng luồng Retrieval Pipeline và đánh giá (Evaluation).
+- **UI / UX Engineer (Trần Phước Anh Khoa)**: Phát triển giao diện Streamlit, trực quan hóa biểu đồ và kết quả.
 
 *(Chi tiết các tasks, metrics và roles vui lòng tham khảo file [plan.md](./plan.md))*.
 
